@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Run with python 3 or else get error 
+# Run with python 3 only
 import pyaudio
 import speech_recognition as sr
 import wave
-#import errorhaddle as eh
+
 
 from ctypes import *
 from contextlib import contextmanager
