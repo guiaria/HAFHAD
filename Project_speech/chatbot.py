@@ -1,8 +1,9 @@
+from database import db_connect
 # Sentences we'll respond with if the user greeted us
 COMMAND_KEYWORDS = ("ทำ","เปิด","ปิด","ตรวจ","เช็ค")
 
-
-#GREETING_RESPONSES = ["'sup bro", "hey", "*nods*", "hey you get my snap?"]
+def sent_to_database(sentence):
+    pass
 
 def check_for_command(sentence):
     """If any of the words in the user's input was a greeting, return a greeting response"""
@@ -22,5 +23,8 @@ def question_respond(sentence):
     """ เอาคำถามไปกูเกิ้ล"""
     pass
 
+
+if __name__ == "__main__":
+    pass
 
 
