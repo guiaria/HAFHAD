@@ -7,7 +7,6 @@ import time
 import wave
 import os
 import logging
-from speech import speech
 from Open_Close import open_close
 
 
