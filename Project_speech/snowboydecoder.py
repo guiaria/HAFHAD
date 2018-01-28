@@ -8,6 +8,7 @@ import wave
 import os
 import logging
 from speech import speech
+from Open_Close import open_close
 
 
 logging.basicConfig()
@@ -60,8 +61,10 @@ def play_audio_file(fname=DETECT_DING):
 
 def play_function(fname=DETECT_DING):
 	""" Simple callback function to run call other function after detect Hotword """
-	print("Hotword Detect")
-	speech()
+	print("Run Function")
+	open_close()
+	print("Wait for next HOTWORD")
+	
 	
 	
 
