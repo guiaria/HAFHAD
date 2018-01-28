@@ -21,7 +21,7 @@ def wake_word():
 	print('Listening... Press Ctrl+C to exit')
 
 	# Main Loop
-	detector.start(detected_callback=snowboydecoder.play_audio_file,
+	detector.start(detected_callback=snowboydecoder.play_function,
 		           interrupt_check=interrupt_callback,
 		           sleep_time=0.03)
 
