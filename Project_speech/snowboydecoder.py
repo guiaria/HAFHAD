@@ -60,9 +60,8 @@ def play_audio_file(fname=DETECT_DING):
 
 def play_function(fname=DETECT_DING):
 	""" Simple callback function to run call other function after detect Hotword """
-	print("Run Function")
 	conversation()
-	print("Wait for next HOTWORD")
+	print("Waiting for next HOTWORD")
 	
 	
 	
