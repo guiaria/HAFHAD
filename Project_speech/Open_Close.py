@@ -7,33 +7,16 @@ import csv
 
 
 
-def open_close():
+def open_close(text):
     
-    # obtain audio from the microphone
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Say something!")
-        audio = r.listen(source)
-
-    # recognize speech using Google Speech Recognition
-    try:
-         print("Google Speech Recognition thinks you said " + r.recognize_google(audio, language ="th-TH"))
-         word_recv = r.recognize_google(audio, language ="th-TH")
-    except sr.UnknownValueError:
-        print("Google Speech Recognition could not understand audio")
-    except sr.RequestError as e:
-        print("Could not request results from Google Speech Recognition service; {0}".format(e))
-
- 
-    
-    
-    e=word_tokenize(word_recv,engine='newmm')
+    print(text)
+    e=word_tokenize(text,engine='newmm')
     print(e)
     
     open_light = []
     close_light = []
     stopwords1 = stopwords.words('thai')
-    stopwords2 = ['สิ','ดิ','หน่อย']
+    stopwords2 = ['สิ','ดิ','หน่อย','ให้','ใน']
 
     filter_word1 = e
     for word in e:
@@ -74,11 +57,7 @@ def open_close():
         if len(filter_word) > 3:
             if(filter_word[3] == "เเละ" and filter_word[-1] != "เเละ"):
                 close_light.append(filter_word[4])
-    with open('list.csv', 'wb') as csvfile:
-        wr = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-        wr.writerow(open_light)
-        wr.writerow(close_light)
 
 if __name__ == "__main__":
     open_close()
-    print("Finished")
+    print("Finished open close light function")
