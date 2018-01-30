@@ -1,74 +1,93 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 from pythainlp.tag import pos_tag
 from pythainlp.corpus import stopwords
-
-
 from pythainlp.tokenize import word_tokenize
+import speech_recognition as sr
+import json
+import csv
+from Naked.toolshed.shell import execute_js, muterun_js
+from tts import tts
+import sys
 
 
-text='เปิดไฟในห้องนอนให้หน่อย'
-e=word_tokenize(text,engine='newmm') 
 
-if any(['ปิดไฟ' in text, 'ปิดปลั๊ก' in text, 'เปิดไฟ' in text, 'เปิดปลั๊ก' in text]):
-    print(1)
+def open_close(text):
+
+    print(text)
+    e=word_tokenize(text,engine='newmm')
     
-
-     
-
-
-
-
-
-#e = ''.join(e)
-print(e)
-open_light = []
-close_light = []
-stopwords = stopwords.words('thai')
-stopwords1 = ['สิ','ดิ','หน่อย']
-
-filter_word1 = e
-for word in e:
-    if any(["เปิด" in word,"ปิด" in word]):
-        continue
-    if word in stopwords:
-        filter_word1.remove(word)
-        
-filter_word = [word1 for word1 in filter_word1 if word1 not in stopwords1]
-pos_list = pos_tag(filter_word,engine='artagger')
-print(pos_list)
-
-if(filter_word[0] == "เปิดไฟ"):
-    open_light.append(filter_word[1])
-    if len(filter_word) > 2:
-        if(filter_word[2] == "เเละ" and filter_word[-1] != "เเละ"):
-            open_light.append(filter_word[3])
     
-if(filter_word[0] == "เปิด" and filter_word[1] == "ปลั๊ก"):
-    open_light.append(filter_word[2])
-    if len(filter_word) > 3:
-        if(filter_word[3] == "เเละ" and filter_word[-1] != "เเละ"):
-            open_light.append(filter_word[4])
-    
-if(filter_word[0] == "ปิดไฟ"):
-    close_light.append(filter_word[1])
-    if len(filter_word) > 2:
-        if(filter_word[2] == "เเละ" and filter_word[-1] != "เเละ"):
-            close_light.append(filter_word[3])
-    
-if(filter_word[0] == "ปิด" and filter_word[1] == "ปลั๊ก"):
-    close_light.append(filter_word[2])
-    if len(filter_word) > 3:
-        if(filter_word[3] == "เเละ" and filter_word[-1] != "เเละ"):
-            close_light.append(filter_word[4])
+    light = []
+    stopwords1 = stopwords.words('thai')
+    stopwords2 = ['สิ','ดิ','หน่อย','ให้','ใน']
+
+    filter_word1 = e
+    for word in e:
+
+        if any(['เปิด' in word, 'ปิด' in word]):
+            continue
+        if word == stopwords2:
+            filter_word1.remove(word)
+
+    filter_word = [word1 for word1 in filter_word1 if word1 not in stopwords2]
+    print("\n")
+    print(filter_word)
 
 
+    if(filter_word[0] == "เปิดไฟ"):
+        light.append("open")
+        light.append(filter_word[1])
+        if len(filter_word) > 2:
+            print(1)
+            if(filter_word[2] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[3])
+  
 
-    
+    if(filter_word[0] == "เปิด" and filter_word[1] == "ปลั๊ก"):
+        light.append("open")
+        light.append(filter_word[2])
+        if len(filter_word) > 3:
+            print(1)
+            if(filter_word[3] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[4])
 
-print(open_light)
-print(close_light)
+
+    if(filter_word[0] == "ปิดไฟ"):
+        light.append("close")
+        light.append(filter_word[1])
+        if len(filter_word) > 2:
+            print(1)
+            if(filter_word[2] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[3])
+ 
+
+    if(filter_word[0] == "ปิด" and filter_word[1] == "ปลั๊ก"):
+        light.append("close")
+        light.append(filter_word[2])
+        if len(filter_word) > 3:
+            print(1)
+            if(filter_word[3] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[4])
+                
+              
+                
+    print(light)
+    if(len(light) > 1):
+    	final = ",".join(light)
+    	print(final)
+    	success = muterun_js('dummy.js',final)
+    	if success.exitcode == 0:
+    		print(success.stdout.decode("utf-8"))
+    	else:
+    		sys.stderr.write(success.stderr)
+    		
+    	
+    else:
+    	tts("ไม่เข้าใจคำสั่งของคุณค่ะ")
+    	
+    print("\n\n\n")	
+
+
