@@ -4,16 +4,19 @@ from pythainlp.tokenize import word_tokenize
 import speech_recognition as sr
 import json
 import csv
+from Naked.toolshed.shell import execute_js, muterun_js
+from tts import tts
+import sys
 
 
 
 def open_close(text):
 
-	
+    print(text)
     e=word_tokenize(text,engine='newmm')
     
-    open_light = []
-    close_light = []
+    
+    light = []
     stopwords1 = stopwords.words('thai')
     stopwords2 = ['สิ','ดิ','หน่อย','ให้','ใน']
 
@@ -31,36 +34,60 @@ def open_close(text):
 
 
     if(filter_word[0] == "เปิดไฟ"):
-        open_light.append(filter_word[1])
+        light.append("open")
+        light.append(filter_word[1])
         if len(filter_word) > 2:
-            if(filter_word[2] == "เเละ" and filter_word[-1] != "เเละ"):
-                open_light.append(filter_word[3])
+            print(1)
+            if(filter_word[2] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[3])
   
 
     if(filter_word[0] == "เปิด" and filter_word[1] == "ปลั๊ก"):
-        open_light.append(filter_word[2])
+        light.append("open")
+        light.append(filter_word[2])
         if len(filter_word) > 3:
-            if(filter_word[3] == "เเละ" and filter_word[-1] != "เเละ"):
-                open_light.append(filter_word[4])
+            print(1)
+            if(filter_word[3] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[4])
 
 
     if(filter_word[0] == "ปิดไฟ"):
-        close_light.append(filter_word[1])
+        light.append("close")
+        light.append(filter_word[1])
         if len(filter_word) > 2:
-            if(filter_word[2] == "เเละ" and filter_word[-1] != "เเละ"):
-                 close_light.append(filter_word[3])
+            print(1)
+            if(filter_word[2] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[3])
  
 
     if(filter_word[0] == "ปิด" and filter_word[1] == "ปลั๊ก"):
-        close_light.append(filter_word[2])
+        light.append("close")
+        light.append(filter_word[2])
         if len(filter_word) > 3:
-            if(filter_word[3] == "เเละ" and filter_word[-1] != "เเละ"):
-                close_light.append(filter_word[4])
+            print(1)
+            if(filter_word[3] == "และ" and filter_word[-1] != "และ"):
+                print(2)
+                light.append(filter_word[4])
                 
               
                 
-    print(open_light)
-    print(close_light)
+    print(light)
+    if(len(light) > 1):
+    	final = ",".join(light)
+    	print(final)
+    	success = muterun_js('dummy.js',final)
+    	if success.exitcode == 0:
+    		print(success.stdout.decode("utf-8"))
+    	else:
+    		sys.stderr.write(success.stderr)
+    		
+    	
+    else:
+    	tts("ไม่เข้าใจคำสั่งของคุณค่ะ")
+    	
     print("\n\n\n")	
 
 
