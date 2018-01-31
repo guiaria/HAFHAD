@@ -68,15 +68,18 @@ def getEventsToday():
 				startMinute = str(startMinute)
 				startHour = str(startHour)
 				if(count == 0):
-					tts(eventTitle + " ตอน " + startHour + ":" + startMinute)
+					response = eventTitle + " ตอน " + startHour + ":" + startMinute
 				if(count > 0):
-					tts("กับ"+ eventTitle + " ตอน " + startHour + ":" + startMinute)
+					response = response +"กับ"+ eventTitle + " ตอน " + startHour + ":" + startMinute
 				count = count+1
 
 			except (KeyError):
+				count = 500
 				tts("มีปัญหาในการต่อปฏิทิน Google ค่ะ")
 			
 		page_token = events.get('nextPageToken')
+		if count != 500:
+			tts(response + "ค่ะ")
 
 		if not page_token:
 			return
@@ -124,15 +127,18 @@ def getEventsTomorrow():
 				startMinute = str(startMinute)
 				startHour = str(startHour)
 				if(count == 0):
-					tts(eventTitle + "ตอน" + startHour + ":" + startMinute)
+					response = eventTitle + " ตอน " + startHour + ":" + startMinute
 				if(count > 0):
-					tts("กับ"+eventTitle + "ตอน" + startHour + ":" + startMinute)
+					response = response +"กับ"+ eventTitle + " ตอน " + startHour + ":" + startMinute
 				count = count +1
 
 			except (KeyError):
+				count = 500
 				tts("มีปัญหาในการต่อปฏิทิน Google ค่ะ")
 			
 		page_token = events.get('nextPageToken')
+		if count != 500:
+			tts(response + "ค่ะ")
 		
 		if not page_token:
 			return
