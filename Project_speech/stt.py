@@ -18,7 +18,7 @@ def stt():
         
     except sr.UnknownValueError:
         print("Google Speech Recognition could not understand audio\n")
-        text = "ไม่เข้าใจค่ะกรุณาลองอีกครั้ง"
+        text = "ไม่เข้าใจที่พูดออกมาค่ะ"
         tts(text)
     except sr.RequestError as e:
         print("Could not request results from Google Speech Recognition service; {0}\n".format(e))

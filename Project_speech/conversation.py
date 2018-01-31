@@ -1,6 +1,7 @@
 import speech_recognition as sr
 from Open_Close import open_close
 from checkemail import checkemail
+from checkcalendar import checkcalendar
 from stt import stt
 from tts import tts
 
@@ -18,8 +19,12 @@ def conversation():
 		checkemail()
 		count = 1
 		
+	if any(['บอกการแจ้งเตือนปฏิทิน' in text,'ดูปฏิทิน' in text, 'แจ้งเตือนอะไร' in text,'เช็คปฏิทิน' in text, 'เช็คแจ้งเตือน' in text,"ดูการแจ้งเตือน" in text,"มีการแจ้งเตือน" in text]):
+		checkcalendar(text)
+		count = 1
+		
 	
-	if count != 1:
+	if (count != 1 and text != "ไม่เข้าใจค่ะกรุณาลองอีกครั้ง"):
 		tts("ไม่เข้าใจคำสั่งของคุณค่ะ")
 
 

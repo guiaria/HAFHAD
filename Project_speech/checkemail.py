@@ -8,8 +8,6 @@ from tts import tts
 
 def getSender(email):
     """
-        Returns the best-guess sender of an email.
-        Arguments:
         email -- the email whose sender is desired
         Returns:
         Sender of the email.
