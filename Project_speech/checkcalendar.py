@@ -54,10 +54,10 @@ def getEventsToday():
 			return
 		tts("คุณมี %d การแจ้งเตือนค่ะ" % len(events['items']))
 		print("คุณมี %d การแจ้งเตือนค่ะ" % len(events['items']))
+		count = 0
 		for event in events['items']:
 
 			try:
-				count = 0
 				eventTitle = event['summary']
 				eventTitle = str(eventTitle)
 				eventRawStartTime = event['start']
@@ -70,7 +70,7 @@ def getEventsToday():
 				if(count == 0):
 					tts(eventTitle + " ตอน " + startHour + ":" + startMinute)
 				if(count > 0):
-					tts("กับ"+eventTitle + " ตอน " + startHour + ":" + startMinute)
+					tts("กับ"+ eventTitle + " ตอน " + startHour + ":" + startMinute)
 				count = count+1
 
 			except (KeyError):
@@ -108,7 +108,9 @@ def getEventsTomorrow():
 		if(len(events['items']) == 0):
 			tts("คุณไม่มีการแจ้งเตือนอะไรในวันพรุ่งนี้")
 			return
-		tts("คุณมีการแจ้งเตือน")
+		tts("คุณมี %d การแจ้งเตือนค่ะ" % len(events['items']))
+		print("คุณมี %d การแจ้งเตือนค่ะ" % len(events['items']))
+		count = 0
 		for event in events['items']:
 			
 			try:
@@ -121,7 +123,11 @@ def getEventsTomorrow():
 				startHour = int(startHour)
 				startMinute = str(startMinute)
 				startHour = str(startHour)
-				tts(eventTitle + "ตอน" + startHour + ":" + startMinute) # This will be mic.say
+				if(count == 0):
+					tts(eventTitle + "ตอน" + startHour + ":" + startMinute)
+				if(count > 0):
+					tts("กับ"+eventTitle + "ตอน" + startHour + ":" + startMinute)
+				count = count +1
 
 			except (KeyError):
 				tts("มีปัญหาในการต่อปฏิทิน Google ค่ะ")
