@@ -25,14 +25,16 @@ def open_close(text):
 
         if any(['เปิด' in word, 'ปิด' in word]):
             continue
-        if word == stopwords2:
+        if word == stopwords1:
             filter_word1.remove(word)
 
     filter_word = [word1 for word1 in filter_word1 if word1 not in stopwords2]
     print("\n")
     print(filter_word)
 
-
+    if len(filter_word) < 2:
+        return 0
+    
     if(filter_word[0] == "เปิดไฟ"):
         light.append("open")
         light.append(filter_word[1])
@@ -43,7 +45,7 @@ def open_close(text):
                 light.append(filter_word[3])
   
 
-    if(filter_word[0] == "เปิด" and filter_word[1] == "ปลั๊ก"):
+    elif(filter_word[0] == "เปิด" and filter_word[1] == "ปลั๊ก"):
         light.append("open")
         light.append(filter_word[2])
         if len(filter_word) > 3:
@@ -53,7 +55,7 @@ def open_close(text):
                 light.append(filter_word[4])
 
 
-    if(filter_word[0] == "ปิดไฟ"):
+    elif(filter_word[0] == "ปิดไฟ"):
         light.append("close")
         light.append(filter_word[1])
         if len(filter_word) > 2:
@@ -63,7 +65,7 @@ def open_close(text):
                 light.append(filter_word[3])
  
 
-    if(filter_word[0] == "ปิด" and filter_word[1] == "ปลั๊ก"):
+    elif(filter_word[0] == "ปิด" and filter_word[1] == "ปลั๊ก"):
         light.append("close")
         light.append(filter_word[2])
         if len(filter_word) > 3:
@@ -71,6 +73,9 @@ def open_close(text):
             if(filter_word[3] == "และ" and filter_word[-1] != "และ"):
                 print(2)
                 light.append(filter_word[4])
+                
+    else:
+        return 0
                 
               
                 
@@ -86,8 +91,9 @@ def open_close(text):
     		
     	
     else:
-    	tts("ไม่เข้าใจคำสั่งของคุณค่ะ")
+        	tts("ไม่เข้าใจคำสั่งของคุณค่ะ")
     	
     print("\n\n\n")	
+    return 1
 
 

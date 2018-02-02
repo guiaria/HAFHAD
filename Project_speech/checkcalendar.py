@@ -28,6 +28,58 @@ client_secret = 'ocKT7kdIC8QuD35QDvBItBPc'
 scope = 'https://www.googleapis.com/auth/calendar'
 
 
+def getEventsDate(date):
+
+	tz = pytz.timezone(('Asia/Bangkok'))
+
+	# Get Present Start Time and End Time in RFC3339 Format
+	d = datetime.datetime.now(tz=tz);d = d.replace(day = date)
+	utcString = d.isoformat()	
+	m = re.search('((\+|\-)[0-9]{2}\:[0-9]{2})', str(utcString))
+	utcString = str(m.group(0))
+	todayStartTime = str(d.strftime("%Y-%m-%d")) + "T00:00:00" + utcString
+	todayEndTime = str(d.strftime("%Y-%m-%d")) + "T23:59:59" + utcString
+	page_token = None
+	
+	while True:
+
+		# Gets events from primary calender from each page in present day boundaries
+		events = service.events().list(calendarId='primary', pageToken=page_token, timeMin=todayStartTime, timeMax=todayEndTime).execute() 
+		
+		if(len(events['items']) == 0):
+			tts("คุณไม่มีการแจ้งเตือนอะไรในวันที่ %d ค่ะ"%date)
+			return
+		tts("คุณมี %d การแจ้งเตือนค่ะ" % len(events['items']))
+		print("คุณมี %d การแจ้งเตือนค่ะ" % len(events['items']))
+		count = 0
+		for event in events['items']:
+
+			try:
+				eventTitle = event['summary']
+				eventTitle = str(eventTitle)
+				eventRawStartTime = event['start']
+				eventRawStartTime = eventRawStartTime['dateTime'].split("T")
+				temp = eventRawStartTime[1]
+				startHour, startMinute, temp = temp.split(":", 2)
+				startHour = int(startHour)
+				startMinute = str(startMinute)
+				startHour = str(startHour)
+				if(count == 0):
+					response = eventTitle + " ตอน " + startHour + ":" + startMinute
+				if(count > 0):
+					response = response +"กับ"+ eventTitle + " ตอน " + startHour + ":" + startMinute
+				count = count+1
+
+			except (KeyError):
+				count = 500
+				tts("มีปัญหาในการต่อปฏิทิน Google ค่ะ")
+			
+		page_token = events.get('nextPageToken')
+		if count != 500:
+			tts(response + "ค่ะ")
+
+		if not page_token:
+			return
 
 
 
@@ -196,12 +248,12 @@ def checkcalendar(text):
     elif("พรุ่งนี้" in text and "พรุ่งนี้" not in e[0]):
         getEventsTomorrow()
     elif("วันที่" in e):
-        stopwords = stopwords.words('thai')
+        stopwords2 = stopwords.words('thai')
         stopwords1 = ['สิ','ดิ','หน่อย']
 
         filter_word1 = e
         for word in e:
-            if word in stopwords:
+            if word in stopwords2:
                 filter_word1.remove(word)
         
         filter_word = [word1 for word1 in filter_word1 if word1 not in stopwords1]
@@ -222,18 +274,19 @@ def checkcalendar(text):
         
         
             if(correctDate == False):
-                print("not valid date")
+                tts("วันที่ไม่ถูกต้องค่ะ")
             elif(int(checkdate) < int(date)):
-                print("not valid date")
+                tts("วันที่ไม่ถูกต้องค่ะ")
             else:
-                print("go to function in development")
+                getEventsDate(int(checkdate))
+                return 1
         
         
         else:
-            print("not valid arguement date")
+            tts("วันที่ไม่ถูกต้องค่ะ")
         
     else:
-        print("not valid arguement")
+        return 0
 
 
 if __name__ == '__main__':
