@@ -83,11 +83,11 @@ def open_close(text):
     if(len(light) > 1):
     	final = ",".join(light)
     	print(final)
-    	success = muterun_js('/plug/plug.js',final)
+    	success = muterun_js('plug/plug.js',final)
     	if success.exitcode == 0:
     		print(success.stdout.decode("utf-8"))
     	else:
-    		sys.stderr.write(success.stderr)
+    		sys.stderr.write(success.stderr.decode("utf-8"))
     		
     	
     else:

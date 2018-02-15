@@ -68,42 +68,42 @@ process.argv.forEach(function(index) {
 
 });
 
-var status1;
-var status2;
+// var status1;
+// var status2;
 
-if( device1 != '' ) {
-	firebaseController.readDeviceDataFromAlias( userID, device1, function( deviceJson ) {
+// if( device1 != '' ) {
+// 	firebaseController.readDeviceDataFromAlias( userID, device1, function( deviceJson ) {
 
-		//console.log( deviceJson );
-		if( deviceJson )
-			setStatePlug ( command, deviceJson.ip );
-		else
-			status1 = 0;
-	} )
+// 		//console.log( deviceJson );
+// 		if( deviceJson )
+// 			setStatePlug ( command, deviceJson.ip );
+// 		else
+// 			status1 = 0;
+// 	} )
 	
-}
+// }
 
-if( device2 != '' ) {
+// if( device2 != '' ) {
 
-	firebaseController.readDeviceDataFromAlias( userID, device2, function( deviceJson ) {
+// 	firebaseController.readDeviceDataFromAlias( userID, device2, function( deviceJson ) {
 
-		//console.log( deviceJson );
-		if( deviceJson )
-			setStatePlug ( command, deviceJson.ip );
-		else
-			status2 = 0
-	} )
+// 		//console.log( deviceJson );
+// 		if( deviceJson )
+// 			setStatePlug ( command, deviceJson.ip );
+// 		else
+// 			status2 = 0
+// 	} )
 	
-}
+// }
 
-var returnToPython = ''
+// var returnToPython = ''
 
-if( status1 == 0 ) {
-	returnToPython += 'ไม่มี'+ device1;
-}
+// if( status1 == 0 ) {
+// 	returnToPython += 'ไม่มี'+ device1;
+// }
 
-if(device2 != '') {
-	if( status1 == 0 && status2 == 0)
-		returnToPython += ' และ ไม่มี'+ device2;
-}
-console.log( returnToPython );
+// if(device2 != '') {
+// 	if( status1 == 0 && status2 == 0)
+// 		returnToPython += ' และ ไม่มี'+ device2;
+// }
+//console.log( returnToPython );

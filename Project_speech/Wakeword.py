@@ -17,11 +17,11 @@ def detected_callback():
     print("hotword detected")
 def wake_word():
 	signal.signal(signal.SIGINT, signal_handler)
-	detector = snowboydecoder.HotwordDetector("jarvis.pmdl", sensitivity=0.5, audio_gain=1)
+	detector = snowboydecoder.HotwordDetector("anna.pmdl", sensitivity=0.5, audio_gain=1)
 	print('Listening... Press Ctrl+C to exit')
 
 	# Main Loop
-	print("\n\nWait for **JARVIS** word")
+	print("\n\nWait for **ANNA** word")
 	detector.start(detected_callback=snowboydecoder.play_function,
 		           interrupt_check=interrupt_callback,
 		           sleep_time=0.03)

@@ -7,7 +7,7 @@ var firebaseController = require("./firebaseController.js");
 var plugSetting = require("./connectPlug.js")
 
 plugSetting.settingDevice( roomSSID, roomPass, myALIAS, function( status ){
-    console.log('status:'+status);
+    console.log('status:' + status);
 });
 
 //firebaseController.updateDeviceStateFromMac( 1, '50:c7:bf:98:fb:d5', true)
