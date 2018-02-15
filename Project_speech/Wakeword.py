@@ -28,26 +28,11 @@ def wake_word():
 
 	detector.terminate()
     
-def stopit():
-    global interrupted
-    interrupted = True
+
         
 
 
 
-def wake_word1():
-	signal.signal(signal.SIGINT, signal_handler)
-	detector = snowboydecoder.HotwordDetector("jarvis.pmdl", sensitivity=0.5, audio_gain=1)
-	print('Listening... Press Ctrl+C to exit')
-
-	# Main Loop
-	print("\n\nWait for Song Wake word")
-	detector.start(detected_callback=stopit(),
-		           interrupt_check=interrupt_callback,
-		           sleep_time=0.03)
-
-	detector.terminate()
-	return 1
 
 
 

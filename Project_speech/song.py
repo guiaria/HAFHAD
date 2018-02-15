@@ -7,12 +7,12 @@ import urllib.parse
 from bs4 import BeautifulSoup
 from pythainlp.tokenize import word_tokenize 
 from tts import tts
+from stt import stt
 
 
 
 
-
-
+inte = False
 
 
 
@@ -38,7 +38,7 @@ def my_hook(d):
 def getSong(link):
     
     ydl_opts = {
-            'format': 'bestaudio/best',    
+            'format': 'worstaudio/worst',    
             'extractaudio': True,
             'outtmpl': 'song/%(title)s',        
             'noplaylist' : True,        
@@ -47,10 +47,12 @@ def getSong(link):
             }
 
     r = None
-    try:    
+    try:
+        tts("กําลังหาเพลงค่ะ")
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([link])
             r = ydl.extract_info(link,download=False)
+            
             
         return r['title']
     except Exception as e:
@@ -59,15 +61,14 @@ def getSong(link):
         return 0
             
     
-        
-    
+
 
 
 def playSong(song):
     try:
         p = vlc.MediaPlayer("song/"+song)
         p.play()
-        return p
+        return 1
     except Exception as e:
         tts("มีปัญหาเล่นเพลงค่ะ")
         return 0
@@ -79,9 +80,9 @@ def playSong(song):
     
 def song(text):   
     e=word_tokenize(text,engine='newmm')
-    
     if(e[0] == 'เล่น' or e[0] == 'เปิด'):
         if(e[1] == 'เพลง' and e[1] != e[-1]):
+            print(e)
             e.pop(0)
             e.pop(0)
             search = ''.join(e)
@@ -98,8 +99,27 @@ def song(text):
             else:
                 return player
             
-        else:
+        elif(e[1] == 'เพลง' and e[1] == e[-1]):
+            tts("กรุณาระบุชื่อเพลงด้วยค่ะ")
+            search = stt()
+            print("Song to Search: %s"%search)
+            link = getLink(search)
+            
+            song = getSong(link)
+            if(song == 0):
+                return 0
+            
+            player = playSong(song)
+            if(player == 0):
+                return 0
+            else:
+                return player
+            
             return 0
+        else:
+            tts("ไม่เข้าใจคำสั่งของคุณค่ะ")
+            return 0
+            
     else:
         return 0
             

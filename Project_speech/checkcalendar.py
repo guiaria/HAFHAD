@@ -286,6 +286,7 @@ def checkcalendar(text):
             tts("วันที่ไม่ถูกต้องค่ะ")
         
     else:
+        tts("โปรดระบุวันที่ด้วยค่ะ")
         return 0
 
 
