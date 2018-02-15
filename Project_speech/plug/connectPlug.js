@@ -1,9 +1,6 @@
 // ################################################################# //
 // ######	           USER VARIABLE CHANGE HERE!!!		            #### //
 // ################################################################# //
-var roomSSID 	= 'Powerpuff';
-var roomPass 	= 'cpe28kmutt';
-var myALIAS = 'ห้องนอน';
 
 var selfIP = '192.168.0.1';
 
@@ -32,7 +29,7 @@ function getSSID( callback )
 {
   const iwlist = spawn('iwlist', ['wlan0','scan']);
   iwlist.stdout.on('data', (chunk) => {
-    var ssid;
+    var temp;
     var data = `${chunk}`;
     var lines = data.split(/\r?\n/);
     var plugSSID = ''
@@ -40,15 +37,16 @@ function getSSID( callback )
     lines.forEach(function(line)
     {
       if(line.includes('ESSID:')) {
-        ssid = line.replace('ESSID:"','');
-        ssid = ssid.replace('"','');
-        ssid = ssid.trim();
-        if(ssid.includes('TP-LINK')) {
-          plugSSID = ssid;
+        temp = line.replace('ESSID:"','');
+        temp = temp.replace('"','');
+        temp = temp.trim();
+        if(temp.includes('TP-LINK')) {
+          plugSSID = temp;
+          console.log(plugSSID);
         }
       }
     });
-    callback( ssid );
+    callback( plugSSID );
   });
 }
 
@@ -73,7 +71,10 @@ function connectToPlugSSID( plugSSID, callback )
             callback( status );
           }
         });
-      }, 3000);
+      }, 15000);
+    }
+    else {
+      callback ( status )
     }
   });
 }
@@ -81,26 +82,27 @@ function connectToPlugSSID( plugSSID, callback )
 //
 //	    Connect to wifi with <ssid> and <password>
 //
-function connectToWiFi( mySSID, roomPass, callback )
+function connectToWiFi( roomSSID, roomPass, callback )
 {
-  piWifi.connect( mySSID, roomPass, function( err ) 
+  var status = false
+  piWifi.connect( roomSSID, roomPass, function( err ) 
   {
     if ( !err ) { //Network created correctly
       console.log('Connect to WIFI...');
       setTimeout(function () {
-        piWifi.check( mySSID, function ( err, status ) 
-        {
+        piWifi.check( roomSSID, function ( err, status ) {
           if ( !err && status.connected ) {
-            callback ( err )
+            status = true;
+            callback ( status )
           }
           else {
-            callback ( err )
+            callback ( status )
           }
         });
-      }, 3000);
+      }, 15000);
     } 
     else {
-      callback ( err )
+      callback ( status )
     }
   });
 }
@@ -117,16 +119,17 @@ function findIPfromMAC ( plugMAC, callback )
   var plugIP;
 
   console.log('Find Plug IP...');
-
-  exec("nmap -sP 192.168.1.0/24 >/dev/null && arp -an | grep "+plugMAClo+" | awk '{print $2}' | sed 's/[()]//g'", (err, stdout, stderr) => {
-    if (err) {
-      console.log('IP NOT FOUND!');
-    }
-    else{
-      plugIP = stdout;
-      callback(plugIP);
-    }
-  });
+  setTimeout(function () {
+    exec("nmap -sP 192.168.1.0/24 >/dev/null && arp -an | grep "+plugMAClo+" | awk '{print $2}' | sed 's/[()]//g'", (err, stdout, stderr) => {
+      if (err) {
+        console.log('IP NOT FOUND!');
+      }
+      else{
+        plugIP = stdout;
+        callback(plugIP);
+      }
+    });
+  }, 3000);
 }
 
 
@@ -140,57 +143,67 @@ var plugSSID;
 
 module.exports = {
 
-  settingDevice: function() {
+  settingDevice: function( roomSSID, roomPass, myALIAS, callback) {
 
     getSSID( function( ssid ) {
 
-      plugSSID = ssid;
+      if(ssid == ''){
+        console.log('Plug not found');
+        callback(false);
+        process.exit();
+      }
+      else{
+        plugSSID = ssid;
 
-      connectToPlugSSID( plugSSID,  function( status1 ) {
+        connectToPlugSSID( plugSSID,  function( status1 ) {
 
-        if( status1 ) {
-          // CONNECT PLUG
-          client.getDevice( { host: '192.168.0.1' } ).then( ( selfDevice ) => {		
-                                  
-            plugINFO = selfDevice.sysInfo;
-            plugMAC = selfDevice.mac;
-            selfDevice.setPowerState(true);
+          if( status1 ) {
+            // CONNECT PLUG
+            client.getDevice( { host: selfIP } ).then( ( selfDevice ) => {		
+              plugINFO = selfDevice.sysInfo;
+              plugMAC = selfDevice.mac;
+              selfDevice.setPowerState(true);
 
-            // SET PLUG TO CONNECT WIFI
-            selfDevice.send( { "netif": { "set_stainfo": { "ssid":roomSSID, "password":roomPass, "key_type":3 } } } );	
+              //SET PLUG TO CONNECT WIFI
+              selfDevice.send( { "netif": { "set_stainfo": { "ssid":roomSSID, "password":roomPass, "key_type":3 } } } );	
 
-            connectToWiFi( mySSID, roomPass, function( status2 ){
-              if( status2 ) {
+              connectToWiFi( roomSSID, roomPass, function( status2 ){
+                if( status2 ) {
 
-                findIPfromMAC( plugMAC, function( plugIP ) {
-                  if( plugIP != '' ) {
-                    // GET PLUG IP FROM MAC.
-                    console.log( 'FOUND IP ' + plugIP );
-                    console.log( 'Connect to Plug...' );
-                    const plug = client.getDevice( { host: plugIP } ).then( ( device )=>{
-                      device.setPowerState( false );
-                      device.setAlias( myALIAS ).then( function() {
-                        console.log( 'Current Plug name: ' + device.alias );
-                        device.getSysInfo().then( console.log );
-                        firebaseController.writeDeviceData( 1, device.alias, plugMAC, plugINFO, device.relayState );  
+                  findIPfromMAC( plugMAC, function( plugIP ) {
+                    if( plugIP != '' ) {
+                      // GET PLUG IP FROM MAC.
+                      console.log( 'FOUND IP ' + plugIP );
+                      console.log( 'Connect to Plug...' );
+                      const plug = client.getDevice( { host: plugIP } ).then( ( device )=>{
+                        device.setPowerState( false );
+                        device.setAlias( myALIAS ).then( function() {
+                          console.log( 'Current Plug name: ' + device.alias );
+                          //device.getSysInfo().then( console.log );
+                          firebaseController.writeDeviceData( 1, device.alias, plugMAC, plugIP, device.relayState, plugINFO );  
+                          callback(true);
+                        });
+                        
                       });
-                      
-                    });
-                  }
-                });
-              }
-              else {
-                console.log( 'can\'t connect to room wifi ' );
-              }
+                    }
+                  });
+                }
+                else {
+                  console.log( 'can\'t connect to room wifi ' );
+                  callback(false);
+                  process.exit();
+                }
+              });
+
             });
-
-          });
-        }
-        else {
-          console.log( 'can\'t connect to plug ' );
-        }
-      } );
-
-    } );
+          }
+          else {
+            console.log( 'can\'t connect to plug ' );
+            callback(false);
+            process.exit();
+          }
+        });
+      }
+    });
   }
 }

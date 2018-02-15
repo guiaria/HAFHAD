@@ -29,13 +29,15 @@ module.exports = {
     //
     //      FUNCTION to write data to database
     //
-    writeDeviceData: function( userID, alias, mac, ip, state ) {
+    writeDeviceData: function( userID, alias, mac, ip, state, info ) {
+        mac = mac.toLowerCase();
         plugRef = database.ref( 'user-plugs/' + userID + '/' + mac );
         plugRef.set( {
             alias: alias,
             mac: mac,
             ip : ip,
-            state : state
+            state : state,
+            info : info
         }, function(){
             process.exit();
         });
@@ -73,11 +75,10 @@ module.exports = {
     },
 
     updateDeviceStateFromMac: function( userID, mac, state ) {
-
-        database.ref( '/user-plugs/' + userID  + '/' + mac + '/' + 'state' ).set( state, function(){
-            process.exit();
-        } );
+        mac = mac.toLowerCase();
+        database.ref( '/user-plugs/' + userID  + '/' + mac + '/' + 'state' ).set( state, function() {
+            process.exit(); 
+        });
         
     }
 }
-    

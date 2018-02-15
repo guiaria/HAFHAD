@@ -8,8 +8,6 @@ var userID = 1;
 // ######	                 REQUIRE MODULE   				    #### //
 // ################################################################# //
 const { Client } = require('tplink-smarthome-api');
-var firebase = require("firebase");
-
 var firebaseController = require("./firebaseController.js");
 
 var command;
@@ -43,7 +41,7 @@ function setStatePlug ( state, deviceIP ) {
 const plugClient = new Client();
 
 process.argv.forEach(function(index) {
-	index = 'close,ห้องนอน,ห้องครัว';
+	//index = 'close,ห้องนอน,ห้องครัว';
 	var words = index.split(',');
 
 	if ( words.length > 1 ){
@@ -108,3 +106,4 @@ if(device2 != '') {
 	if( status1 == 0 && status2 == 0)
 		returnToPython += ' และ ไม่มี'+ device2;
 }
+console.log( returnToPython );
