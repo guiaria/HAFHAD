@@ -1,18 +1,115 @@
 // ################################################################# //
-// ######	           USER VARIABLE CHANGE HERE!!!		        #### //
+// ######	           USER VARIABLE CHANGE HERE!!!		            #### //
 // ################################################################# //
-var mySSID 	= 'Powerpuff';
-var myPass 	= 'cpe28kmutt';
+var roomSSID 	= 'Powerpuff';
+var roomPass 	= 'cpe28kmutt';
 var myALIAS = 'ห้องนอน';
 
+var selfIP = '192.168.0.1';
+
 // ################################################################# //
-// ######	                     FUNCTION                       #### //
+// ######	                 REQUIRE MODULE   				            #### //
+// ################################################################# //
+const { Client } 	= require('tplink-smarthome-api');
+const { spawn } 	= require('child_process');
+const { exec } 		= require('child_process');
+const piWifi 			= require('pi-wifi');
+
+var firebaseController = require("./firebaseController.js");
+
+const client 			= new Client();     // for plug
+
+
+// ################################################################# //
+// ######	                     FUNCTION                         #### //
 // ################################################################# //
 
+
 //
-//	Find <plug ip> from plug <MAC address>
+//    get Plug ssid that name <TP-LINK>
+//    return <ssid>
+function getSSID( callback )
+{
+  const iwlist = spawn('iwlist', ['wlan0','scan']);
+  iwlist.stdout.on('data', (chunk) => {
+    var ssid;
+    var data = `${chunk}`;
+    var lines = data.split(/\r?\n/);
+    var plugSSID = ''
+
+    lines.forEach(function(line)
+    {
+      if(line.includes('ESSID:')) {
+        ssid = line.replace('ESSID:"','');
+        ssid = ssid.replace('"','');
+        ssid = ssid.trim();
+        if(ssid.includes('TP-LINK')) {
+          plugSSID = ssid;
+        }
+      }
+    });
+    callback( ssid );
+  });
+}
+
 //
-function findIPfromMAC ( plugMAC, callback ) {
+//    connect to plug wifi with <plugSSID>
+//    return <status>
+function connectToPlugSSID( plugSSID, callback ) 
+{
+  var status = false
+
+  piWifi.connectOpen(plugSSID,  function(err) {
+    if (!err) {
+      console.log('Connect to PLUG...');
+      setTimeout(function () {
+        piWifi.check(plugSSID, function (err, status) {
+          if (!err && status.connected) {
+            console.log('SUCCESS');
+            status = true;
+            callback( status );
+          }
+          else {
+            callback( status );
+          }
+        });
+      }, 3000);
+    }
+  });
+}
+
+//
+//	    Connect to wifi with <ssid> and <password>
+//
+function connectToWiFi( mySSID, roomPass, callback )
+{
+  piWifi.connect( mySSID, roomPass, function( err ) 
+  {
+    if ( !err ) { //Network created correctly
+      console.log('Connect to WIFI...');
+      setTimeout(function () {
+        piWifi.check( mySSID, function ( err, status ) 
+        {
+          if ( !err && status.connected ) {
+            callback ( err )
+          }
+          else {
+            callback ( err )
+          }
+        });
+      }, 3000);
+    } 
+    else {
+      callback ( err )
+    }
+  });
+}
+
+//
+//	  Find <plug ip> from plug <MAC address>
+//    return <ip>
+function findIPfromMAC ( plugMAC, callback )
+{
 
   plugMAClo = plugMAC.toLowerCase();
 
@@ -32,169 +129,68 @@ function findIPfromMAC ( plugMAC, callback ) {
   });
 }
 
-//
-//	Connect to wifi
-//
-function connectToWiFi( piWifi, mySSID, myPass )
-{
-  piWifi.connect(mySSID, myPass, function(err) 
-  {
-    if (!err) { //Network created correctly
-      console.log('Connect to WIFI...');
-      setTimeout(function () {
-        piWifi.check(mySSID, function (err, status) 
-        {
-          if (!err && status.connected) { }
-          else { }
-        });
-      }, 3000);
-    } 
-    else { }
-  });
-}
 
-function connectPlug(){
+// ################################################################# //
+// ######	                 START HERE						                #### //
+// ################################################################# //
 
-  const TIMEOUT = 6000;
+var plugINFO;
+var plugMAC;
+var plugSSID;
 
-  const { Client } 	= require('tplink-smarthome-api');
-  const client 			= new Client();
-  const { spawn } 	= require('child_process');
-  const { exec } 		= require('child_process');
-  const piWifi 			= require('pi-wifi');
+module.exports = {
 
-  var plugINFO;
-  var plugMAC;
-  var plugIP;
-  
-  const iwlist = spawn('iwlist', ['wlan0','scan']);					// CMD for command 'iwlist wlan0 scan'
-  iwlist.stdout.on('data', (chunk) => {
-    var plugSSID = '';
-    var ssid;
-    var data = `${chunk}`;
-    var lines = data.split(/\r?\n/);
-    var status = 0;
+  settingDevice: function() {
 
-    lines.forEach(function(line)
-    {
-      if(line.includes('ESSID:')){
-        ssid = line.replace('ESSID:"','');
-        ssid = ssid.replace('"','');
-        ssid = ssid.trim();
+    getSSID( function( ssid ) {
 
-        if(ssid.includes('TP-LINK'))
-        {
-          plugSSID = ssid;
-          console.log(plugSSID);
+      plugSSID = ssid;
 
-        
-            setTimeout(function () {
-              piWifi.connectOpen(plugSSID,  function(err)
-              {
-                if (!err) {
-                  console.log('Connect to PLUG...');
-                  setTimeout(function () {
-                    piWifi.check(plugSSID, function (err, status)
-                    {
-                      if (!err && status.connected)
-                      {
-                        console.log('SUCCESS');
-                        status = 1;
-                        setTimeout(function () {
-                          console.log('status:'+status);
-                          if(status == 1) 
-                          {
-                            client.getDevice({host: '192.168.0.1'}).then((tempD) => {		// CONNECT PLUG
-                              
-                              plugINFO = tempD.sysInfo;
-                              plugMAC = tempD.mac;
-                              console.log(plugINFO);
-                              tempD.setPowerState(true);
+      connectToPlugSSID( plugSSID,  function( status1 ) {
 
-                              tempD.send({"netif":{"set_stainfo":{"ssid":mySSID, "password":myPass, "key_type":3} } });	// SET PLUG TO CONNECT WIFI
+        if( status1 ) {
+          // CONNECT PLUG
+          client.getDevice( { host: '192.168.0.1' } ).then( ( selfDevice ) => {		
+                                  
+            plugINFO = selfDevice.sysInfo;
+            plugMAC = selfDevice.mac;
+            selfDevice.setPowerState(true);
 
-                              setTimeout(function () {
-                                  if (err) {
-                                    return console.error(err.message);
-                                  }
-                                  piWifi.connect(mySSID, myPass, function(err) 
-                                  {
-                                    if (!err) { //Network created correctly
-                                      console.log('Connect to WIFI...');
-                                      setTimeout(function () {
-                                        piWifi.check(mySSID, function (err, status) 
-                                        {
-                                          if (!err && status.connected) 
-                                          {
+            // SET PLUG TO CONNECT WIFI
+            selfDevice.send( { "netif": { "set_stainfo": { "ssid":roomSSID, "password":roomPass, "key_type":3 } } } );	
 
-                                            setTimeout(function () {
+            connectToWiFi( mySSID, roomPass, function( status2 ){
+              if( status2 ) {
 
-                                              findIPfromMAC(plugMAC, function(plugIP) {
-                                                if(plugIP != '') {
-
-                                                  console.log('FOUND IP ' + plugIP);											// GET PLUG IP FROM MAC.
-                                                  console.log('Connect to Plug...');
-                                                  const plug = client.getDevice({host: plugIP}).then((device)=>{
-                                                    device.setPowerState(false);
-                                                    device.setAlias(myALIAS).then(function(){
-                                                      console.log('Current Plug name: ' + device.name);
-                                                      device.getSysInfo().then(console.log);
-                                                        
-                                                    });
-                                                    
-                                                  });
-                                                }
-                                              });
-                                            },2000);
-                                          }
-                                        });
-                                      }, 6000);	// TIMEOUT - connect back to wifi
-
-                                    } 
-                                  });
-
-                              }, 6000);
-          
-                            });
-
-                          }
-                        }, 10000);
-                      } 
-                      else
-                      {
-                        console.log('FAIL');
-                        connectToWiFi(piWifi, mySSID, myPass);
-                      }	
+                findIPfromMAC( plugMAC, function( plugIP ) {
+                  if( plugIP != '' ) {
+                    // GET PLUG IP FROM MAC.
+                    console.log( 'FOUND IP ' + plugIP );
+                    console.log( 'Connect to Plug...' );
+                    const plug = client.getDevice( { host: plugIP } ).then( ( device )=>{
+                      device.setPowerState( false );
+                      device.setAlias( myALIAS ).then( function() {
+                        console.log( 'Current Plug name: ' + device.alias );
+                        device.getSysInfo().then( console.log );
+                        firebaseController.writeDeviceData( 1, device.alias, plugMAC, plugINFO, device.relayState );  
+                      });
+                      
                     });
-                  }, 6000);
-                } 
-                else
-                {
-                  console.log('Unable to create the network ' + plugSSID + '.');
-                  connectToWiFi(piWifi, mySSID, myPass);
-                }
+                  }
+                });
+              }
+              else {
+                console.log( 'can\'t connect to room wifi ' );
+              }
+            });
 
-              });
-            }, 1000);
+          });
         }
-        else
-        {
-
+        else {
+          console.log( 'can\'t connect to plug ' );
         }
-      }
-    });
-    
-  });
+      } );
 
-  iwlist.on('close', (code) => {
-    
-  });
-  
+    } );
+  }
 }
-
-
-// ################################################################# //
-// ######	                 START HERE						    #### //
-// ################################################################# //
-
-connectPlug();
